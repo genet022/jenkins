@@ -25,10 +25,17 @@ async def test_validate(log_dir):
         # Synchronously check what juju thinks happened
         validate_statuses(model)
 
+        await asyncio.sleep(30)
+
         # Asynchronously check everything else concurrently
-        await asyncio.gather(
-            validate_ambassador(), validate_jupyterhub_api(), validate_tf_dashboard()
-        )
+        await validate_ambassador()
+        await asyncio.sleep(30)
+        await validate_jupyterhub_api()
+        await asyncio.sleep(30)
+        await validate_tf_dashboard()
+        #await asyncio.gather(
+        #    validate_ambassador(), validate_jupyterhub_api(), validate_tf_dashboard()
+        #)
 
 
 @log_calls
@@ -63,6 +70,7 @@ async def validate_ambassador():
     ambassador_ip = get_ambassador_ip()
 
     for endpoint, text in checks.items():
+        await asyncio.sleep(10)
         resp = await asyncify(requests.get)(f"http://{ambassador_ip}{endpoint}")
         resp.raise_for_status()
         assert resp.content.startswith(text)
@@ -122,6 +130,7 @@ async def validate_tf_dashboard():
     # Wait for up to 5 minutes for the job to complete,
     # checking every 5 seconds
     for i in range(60):
+        await asyncio.sleep(10)
         resp = await asyncify(requests.get)(f"http://{ambassador_ip}/tfjobs/api/tfjob/")
         resp.raise_for_status()
         response = resp.json()["items"][0]
