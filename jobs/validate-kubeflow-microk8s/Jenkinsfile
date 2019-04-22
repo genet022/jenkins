@@ -1,7 +1,7 @@
 @Library('juju-pipeline@master') _
 
 def exec(cmd) {
-    sh "sudo lxc exec ${CONTAINER} -- bash -c 'cd /project && ${cmd}'"
+    sh "juju ssh -m ${CONTROLLER}:default ubuntu/0 -- bash -c 'cd /project && ${cmd}'"
 }
 
 pipeline {
@@ -13,8 +13,7 @@ pipeline {
      */
     environment {
         PATH = "${utils.cipaths}"
-        CONTAINER = "validate-microk8s-${uuid()}"
-        STORAGE = "validate-microk8s-${uuid()}"
+        CONTROLLER = "validate-microk8s-${uuid()}"
     }
     options {
         ansiColor('xterm')
@@ -29,13 +28,9 @@ pipeline {
         }
         stage('Setup LXC') {
             steps {
-                sh "sudo lxc profile show microk8s || sudo lxc profile copy default microk8s"
-                sh "sudo lxc profile edit microk8s < jobs/validate-kubeflow-microk8s/lxc.profile"
-                sh "sudo lxc launch -p default -p microk8s ubuntu:18.04 ${CONTAINER}"
-                sh "sudo lxc storage create ${STORAGE} dir source=/tmp/${STORAGE}"
-                sh "sudo lxc storage volume create ${STORAGE} storage"
-                sh "sudo lxc storage volume attach ${STORAGE} storage ${CONTAINER} /project"
-                sh "sudo cp -r ./* /tmp/${STORAGE}/custom/storage/"
+                sh "juju bootstrap aws ${CONTROLLER}"
+                sh "juju deploy -m ${CONTROLLER}:default ubuntu"
+                sh "juju wait -vw -m ${CONTROLLER}:default"
             }
         }
         stage('Wait for snap') {
@@ -62,7 +57,7 @@ pipeline {
         }
         stage('Deploy kubeflow') {
             steps {
-                exec "microk8s.status --wait-ready --timeout 300"
+                exec "/snap/bin/microk8s.status --wait-ready --timeout 300"
                 exec "microk8s.enable dns storage registry"
                 exec 'microk8s.kubectl patch configmap -n kube-system kube-dns -p "$(<jobs/validate-kubeflow-microk8s/nameservers.json)"'
                 exec "juju bootstrap lxd --debug"
@@ -111,10 +106,7 @@ pipeline {
         }
         cleanup {
             saveMeta()
-            sh "sudo lxc storage volume detach ${STORAGE} storage ${CONTAINER} || true"
-            sh "sudo lxc storage volume delete ${STORAGE} storage || true"
-            sh "sudo lxc delete --force ${CONTAINER} || true"
-            sh "sudo lxc storage delete ${STORAGE} || true"
+            sh "juju kill-controller ${CONTROLLER} -yt0"
         }
     }
 }
