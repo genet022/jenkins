@@ -1690,7 +1690,8 @@ spec:
         })
         # read and ignore any exception so that it doesn't get raised
         # when the task is GC'd
-        done1.exception()
+        for task in done1:
+            task.exception()
     finally:
         await asyncify(_juju_wait)()
 
