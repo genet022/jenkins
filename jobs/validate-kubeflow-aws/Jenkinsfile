@@ -52,6 +52,7 @@ pipeline {
                 exec "sudo snap install charm --classic"
                 exec "sudo snap install jq"
                 exec "sudo snap install juju --classic --channel ${params.juju_channel}"
+                exec "sudo snap install juju-kubectl --classic --edge"
                 exec "sudo snap install juju-wait --classic"
                 exec "sudo snap install yq"
                 exec "sudo snap install kubectl --classic"
@@ -63,7 +64,15 @@ pipeline {
                 exec "git clone https://github.com/juju-solutions/bundle-kubeflow.git"
                 exec "cd bundle-kubeflow && ./scripts/deploy-aws.sh"
                 exec 'juju status -m default | grep "kubernetes-worker/0" | awk "{print \\$5}" > PUB_IP'
-                exec 'juju scp -m default kubernetes-master/0:~/config kube_config'
+            }
+        }
+        stage('Wait for endpoint') {
+            options {
+                retry(60)
+            }
+            steps {
+                sleep 5
+                exec 'curl -vf http://`cat PUB_IP`.xip.io/hub/'
             }
         }
         stage('Validate') {

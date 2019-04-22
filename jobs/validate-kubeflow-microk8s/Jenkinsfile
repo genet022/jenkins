@@ -51,6 +51,7 @@ pipeline {
                 exec "sudo snap install charm --classic"
                 exec "sudo snap install jq"
                 exec "sudo snap install juju --classic --channel ${params.juju_channel}"
+                exec "sudo snap install juju-kubectl --classic --edge"
                 exec "sudo snap install juju-wait --classic"
                 exec "sudo snap install kubectl --classic"
                 exec "sudo snap install lxd"
@@ -64,7 +65,6 @@ pipeline {
                 exec "microk8s.status --wait-ready --timeout 300"
                 exec "microk8s.enable dns storage registry"
                 exec 'microk8s.kubectl patch configmap -n kube-system kube-dns -p "$(<jobs/validate-kubeflow-microk8s/nameservers.json)"'
-                exec "microk8s.config > kube_config"
                 exec "juju bootstrap lxd --debug"
                 exec "microk8s.config | juju add-k8s microk8s-cloud"
 

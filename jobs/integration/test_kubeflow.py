@@ -22,16 +22,17 @@ def get_ambassador_ip():
 
 
 def kubectl_create(path: str):
-    """Creates a Kubernetes resource from the given path."""
+    """Creates a Kubernetes resource from the given path.
 
-    # Expects `kubectl` to be installed, even when microk8s is also available
+    Uses juju-kubectl plugin that introspects model and divines the proper
+    kubeconfig.
+    """
+
     return check_output(
         [
+            "juju",
             "kubectl",
-            "--kubeconfig",
-            "../kube_config",
-            "-n",
-            os.environ["MODEL"],
+            "--",
             "create",
             "-f",
             path,
