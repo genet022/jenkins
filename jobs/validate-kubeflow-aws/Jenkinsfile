@@ -68,15 +68,6 @@ pipeline {
                 exec 'juju status -m default | grep "kubernetes-worker/0" | awk "{print \\$5}" > PUB_IP'
             }
         }
-        stage('Wait for endpoint') {
-            options {
-                retry(60)
-            }
-            steps {
-                sleep 5
-                exec 'curl -vf http://`cat PUB_IP`.xip.io/hub/'
-            }
-        }
         stage('Validate') {
             steps {
                 exec '''
