@@ -56,7 +56,7 @@ pipeline {
             }
             steps {
                 build job:"conformance-v${k8sver}.x-canonical-kubernetes",
-                    parameters: [string(name:'cloud', value: "aws/us-west-1"),
+                    parameters: [string(name:'cloud', value: "aws/us-east-1"),
                                  string(name:'bundle_channel', value: 'candidate'),
                                  string(name:'version_overlay', value: "jobs/overlays/${k8sver}-candidate-overlay.yaml")]
             }
