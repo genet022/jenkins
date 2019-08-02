@@ -120,7 +120,7 @@ pipeline {
                     }
                     steps {
                         build job:"validate-minor-upgrade-${k8sver_range}",
-                            parameters: [string(name:'cloud', value: "google/us-east1"),
+                            parameters: [string(name:'cloud', value: "aws/us-east-1"),
                                          string(name:'upgrade_snap_channel', value:"${k8sver}/candidate"),
                                          string(name:'bundle_channel', value:"candidate"),
                                          string(name:'upgrade_charm_channel', value:"candidate")]
@@ -156,7 +156,7 @@ pipeline {
                     }
                     steps {
                         build job:"validate-vault-v${k8sver}.x",
-                            parameters: [string(name:'cloud', value: "google/us-east1"),
+                            parameters: [string(name:'cloud', value: "aws/us-east-1"),
                                          string(name:'controller', value: "release-vault"),
                                          string(name:'bundle_channel', value:"candidate"),
                                          string(name:'bundle', value:"canonical-kubernetes"),
