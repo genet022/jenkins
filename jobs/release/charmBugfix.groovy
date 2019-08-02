@@ -50,7 +50,7 @@ pipeline {
             when {
                 expression {
                     res = sh(returnStdout: true, script: "${tracker_sh} get-phase --name conformance").trim()
-                    return res != 'pass'
+                    return res != 'fail'
                 }
             }
 
