@@ -24,7 +24,7 @@
 
           export GIT_SSH_COMMAND="ssh -i /var/lib/jenkins/.ssh/cdkbot_rsa -oStrictHostKeyChecking=no"
           export PATH=/var/lib/jenkins/venvs/ci/bin:/var/lib/jenkins/go/bin:/usr/local/go/bin:$PATH
-          cd jobs && ogc snap sync-upstream --snap-list includes/k8s-snap-list.inc
+          cd jobs && python3.6 ./build-snaps/snaps-source.py sync-upstream --snap-list includes/k8s-snap-list.inc
     triggers:
         - timed: "@daily"
 
