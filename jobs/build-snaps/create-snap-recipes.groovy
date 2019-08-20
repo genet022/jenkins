@@ -4,7 +4,7 @@
  automatically built and pushed to snap store
  */
 
-def snap_sh = "${utils.cipy} build-snaps/snaps-source.py"
+def snap_sh = "python3 build-snaps/snaps-source.py"
 def snaps = readYaml text: params.snaps
 
 
