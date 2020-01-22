@@ -91,6 +91,32 @@ async def do_verification(model, app, ip):
 
 
 @pytest.mark.asyncio
+async def test_master_removal_hacluster(model, tools):
+    """Ensure there are 2? 3? masters deployed
+    Take one master down, ensure HA functions
+    Restore the master
+    """
+    name = get_master_name(model)
+    app = model.applications[name]
+
+    # ensure at least 2? 3? masters are deployed
+    # GENET kubeapi-load-balancer probably breaks this
+    num_units = len(app.units)
+    if num_units < 2:
+        log(f"must have more than {num_units} masters deployed")
+        return
+
+    # take a master down
+    action = await unit.run("service stop k8s something")
+
+    for ip in get_test_ips():
+        await do_verification(model, app, ip)
+
+    # restore the master
+    action = await unit.run("service start k8s something")
+
+
+@pytest.mark.asyncio
 async def test_validate_existing_hacluster(model, tools):
     """Assume hacluster is already set up and do not modify the deploy"""
     name = get_master_name(model)
